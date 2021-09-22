@@ -1,55 +1,63 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { useSelector, useDispatch } from "react-redux";
+import React from "react";
 import "./App.css";
+import { connect } from "react-redux";
+import {bindActionCreators} from 'redux';
+import { getCountryData } from "./store/countryData/actions";
 
-function App() {
-  const dispatch = useDispatch();
+class Countries extends React.Component {
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     region: "africa",
+  //   };
+  //   this.handleChange = this.handleChange.bind(this);
+  // }
+  state = {
+    region: 'africa'
+  }
+  
+  componentDidMount() {
+    console.log('mount', this.props)
+     const { getCountryData } =  this.props
+     getCountryData('https://jsonplaceholder.typicode.com/todos/1')
+  }
 
-  useEffect(() => {
-    async function showContries() {
-      const res = await axios.get(
-        `https://restcountries.eu/rest/v2/region/${region}`
-      );
-      dispatch(setCountries({ regions: res.data }));
-    }
-    showContries();
-  }, [region]);
+  handleChange = (event) => {
+    this.setState({ region: event.target.value });
+  }
 
-  const select_region = (e) => {
-    dispatch(setRegion({ region: `${e.target.value}` }));
-  };
-
-  return (
-    <div className="App">
-      <header>
-        <h1>Countries By Region</h1>
-      </header>
-
-      <div>
-        <select id="country" onChange={(e) => setCountries}>
-          {region.map((item, index) => (
-            <option key={index} value={item}>
-              {item}
-            </option>
-          ))}
+  render() {
+    const data = this.props.countriesData
+    console.log(data)
+    return (
+      <div className="countries">
+        <select
+          value={this.state.value}
+          onChange={this.handleChange}
+          className="dropDown"
+        >
+          <option value="africa">africa</option>
+          <option value="americas">americas</option>
+          <option value="europe">europe</option>
+          <option value="asia">asia</option>
         </select>
       </div>
-
-      <div>
-        <select>
-          {countries &&
-            countries.map((data, index) => {
-              return (
-                <option key={index} value={data.name}>
-                  {data.name}
-                </option>
-              );
-            })}
-        </select>
-      </div>
-    </div>
-  );
+    );
+  }
 }
 
-export default App;
+const mapStateToProps = (state) => {
+   return {countriesData: state.countryData}
+}
+
+const mapDispatchToProps = (dispatch) => {
+    return { getCountryData: (url) => dispatch(getCountryData(url))}
+}
+// const mapDispatchToProps = (dispatch) => bindActionCreators(
+//   {
+//       getCountryData,
+//   },
+//   dispatch
+// )
+
+export default connect(mapStateToProps, mapDispatchToProps)(Countries);
